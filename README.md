@@ -45,10 +45,5 @@ HTML5, CSS3, JavaScript (ES6). Hosted on GitHub Pages.
 
 Download `index.html` and open it in any browser. No installation is needed.
 
-## Project details
-
-- **Name:** Pankaj Valvi
-- **College:** [MKD I.O.T , Nandurbar]
-
 ## Contact detail :
 - Mail : pankajvalvi@proton.me
