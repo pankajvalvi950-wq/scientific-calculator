@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SciCalc 991 – Online Scientific Calculator</title>
+<style>
+:root{--bg:#e9ecf1;--fg:#1d2330;--mut:#5d6575;--card:#fff;--line:#d5dae3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13151a;--fg:#e8eaf0;--mut:#9aa2b2;--card:#1c1f26;--line:#2c313b}}
+:root[data-theme="dark"]{--bg:#13151a;--fg:#e8eaf0;--mut:#9aa2b2;--card:#1c1f26;--line:#2c313b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;padding:20px 12px 40px}
+h1{font-size:20px;margin:6px 0 2px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 16px;text-align:center;max-width:400px}
+.calc{width:100%;max-width:400px;background:linear-gradient(#2a2e39,#191c23);border-radius:22px 22px 32px 32px;padding:16px 16px 20px;box-shadow:0 12px 30px rgba(0,0,0,.35),inset 0 1px 0 #3d4353;color:#fff}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.brand{font-weight:700;letter-spacing:.06em;font-size:16px}
+.model{font-size:10px;color:#aab1c0}
+.solar{width:120px;height:30px;border-radius:5px;background:linear-gradient(135deg,#4d2c2c,#2a1a1f);border:1px solid #0f1013}
+.lcd{background:#cdd5be;color:#1a1d17;border-radius:8px;padding:6px 10px 8px;margin-bottom:14px;box-shadow:inset 0 2px 7px rgba(0,0,0,.4);min-height:118px;font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.ind{display:flex;gap:12px;font-size:10px;font-weight:700;height:14px;color:rgba(26,29,23,.28)}
+.ind .on{color:#1a1d17}
+.ex{position:relative;font-size:20px;white-space:nowrap;overflow-x:auto;height:34px;line-height:34px;scrollbar-width:none}
+.ex::-webkit-scrollbar{display:none}
+.res{font-size:34px;text-align:right;min-height:50px;line-height:50px;white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.res sup{font-size:.55em}
+.c{display:inline-block;width:2px;height:1.1em;background:#1a1d17;vertical-align:-.15em;animation:b 1s steps(1) infinite}
+@keyframes b{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.c{animation:none}}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.15;font-size:.62em}
+.fr b{font-weight:400;padding:0 5px}
+.fr b:first-child{border-bottom:2px solid #1a1d17}
+.pad{display:grid;grid-template-columns:repeat(5,1fr);gap:9px 8px}
+.k{position:relative;border:0;border-radius:9px;height:46px;padding:15px 0 0;font:inherit;font-size:15px;color:#fff;background:#363b48;cursor:pointer;box-shadow:0 3px 0 #0c0e12}
+.k:active{transform:translateY(2px);box-shadow:0 1px 0 #0c0e12}
+.k:focus-visible{outline:2px solid #f0b34a;outline-offset:2px}
+.k small{position:absolute;top:3px;left:0;right:0;font-size:10px;line-height:1.2;color:#f0b34a}
+.k.num,.k.op,.k.eq{background:#5a606e;font-size:19px;padding-top:11px}
+.k.ac,.k.del{background:#9be04a;color:#1c2410;font-weight:700;padding-top:11px}
+.k.on{background:#f0b34a;color:#241800}
+.k.bl{color:#8fdcff}
+.k:disabled{opacity:.5;cursor:default}
+.k.cur{outline:2px solid #f0b34a;outline-offset:-3px}
+.hint{font-size:13px;line-height:1.3;color:rgba(26,29,23,.7);font-family:system-ui,sans-serif;display:inline-block;white-space:normal;vertical-align:middle}
+.k:disabled:active{transform:none;box-shadow:0 3px 0 #0c0e12}
+.cv{font-size:11px;border-top:1px solid rgba(26,29,23,.3);margin-top:4px;padding-top:4px}
+.cv div{display:flex;gap:8px;line-height:1.5;white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.cv i{font-style:normal;font-weight:700;width:28px;flex:none}
+.tip{color:var(--mut);font-size:12.5px;max-width:400px;margin:14px 0 0;line-height:1.5}
+.hist{width:100%;max-width:400px;margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.hist summary{cursor:pointer;font-weight:600;font-size:14px}
+.hi{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);cursor:pointer;font:13px ui-monospace,Consolas,monospace}
+.hi b{font-weight:600;white-space:nowrap}
+.hi span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist p{color:var(--mut);font-size:13px;margin:8px 0 0}
+.clr{margin-top:8px;border:1px solid var(--line);background:none;color:var(--fg);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:12px}
+</style>
+</head>
+<body>
+<h1>SciCalc 991</h1>
+<p class="sub">Online scientific calculator with natural fractions, trig, logs, permutations and memory.</p>
+
+<div class="calc">
+  <div class="top"><div><div class="brand">pankajvalvi@proton.me</div><div class="model">991 PLUS · 2nd edition</div></div><div class="solar"></div></div>
+  <div class="lcd">
+    <div class="ind" id="ind"></div>
+    <div class="ex" id="ex"></div>
+    <div class="res" id="res" aria-live="polite"></div>
+    <div class="cv" id="cv"></div>
+  </div>
+  <div class="pad" id="pad"></div>
+</div>
+
+<p class="tip">Press SHIFT to use the yellow functions. DRG switches degrees, radians and grads. S⇔D shows a decimal answer as a fraction. BASE switches the keys to number-system mode: DEC, HEX, BIN, OCT, A–F and logic operations appear on the keys, and the other bases are shown under the result. Press BASE again to go back. Your keyboard works too: digits, + − * / ^ ( ), Enter, Backspace, Esc, arrows.</p>
+
+<details class="hist"><summary>History</summary><div id="hl"></div><button class="clr" id="clr" type="button">Clear history</button></details>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+let tk=[],cur=0,mode='D',shift=false,hyp=false,ANS=0,MEM=0,afterEq=false,res=null,showFrac=false,hist=[],SH,HY,BB,bm=false,bs='D';
+const SYN=new Error('Syntax ERROR'),MTH=new Error('Math ERROR');
+const RX={D:10,H:16,B:2,O:8};
+const dv=(a,b)=>bm?Math.trunc(a/b):a/b;
+const fb=(v,b)=>{if(b==='D')return String(v);const s=(v>>>0).toString(RX[b]).toUpperCase();return b==='B'?s.replace(/\B(?=(?:[01]{4})+$)/g,' '):s};
+
+/* ---------- maths helpers ---------- */
+const rad=a=>mode==='D'?a*Math.PI/180:mode==='G'?a*Math.PI/200:a;
+const deg=r=>mode==='D'?r*180/Math.PI:mode==='G'?r*200/Math.PI:r;
+const z=r=>Math.abs(r)<1e-14?0:r;
+const odd=a=>mode==='D'?Math.abs(a%180)===90:mode==='G'?Math.abs(a%200)===100:false;
+const fact=n=>{if(n<0||n>170||!Number.isInteger(n))return NaN;let r=1;for(let i=2;i<=n;i++)r*=i;return r};
+const ok=(n,r)=>Number.isInteger(n)&&Number.isInteger(r)&&n>=0&&r>=0&&r<=n;
+const nPr=(n,r)=>{if(!ok(n,r))return NaN;let v=1;for(let i=0;i<r;i++)v*=n-i;return v};
+const nCr=(n,r)=>{if(!ok(n,r))return NaN;r=Math.min(r,n-r);let v=1;for(let i=1;i<=r;i++)v=v*(n-r+i)/i;return Math.round(v)};
+const FN={
+ 'sin(':a=>z(Math.sin(rad(a))),'cos(':a=>z(Math.cos(rad(a))),'tan(':a=>odd(a)?NaN:z(Math.tan(rad(a))),
+ 'asin(':a=>deg(Math.asin(a)),'acos(':a=>deg(Math.acos(a)),'atan(':a=>deg(Math.atan(a)),
+ 'sinh(':Math.sinh,'cosh(':Math.cosh,'tanh(':Math.tanh,'asinh(':Math.asinh,'acosh(':Math.acosh,'atanh(':Math.atanh,
+ 'log(':Math.log10,'ln(':Math.log,'10^(':a=>Math.pow(10,a),'e^(':Math.exp,
+ '√(':Math.sqrt,'³√(':Math.cbrt,'abs(':Math.abs,'Not(':a=>~a,'Neg(':a=>-a
+};
+
+/* ---------- lexer + recursive-descent parser ---------- */
+function lex(t){
+ const out=[],dre=bm?/^[0-9A-F]$/:/^[0-9.]$/;let i=0;
+ while(i<t.length){
+  if(dre.test(t[i])){
+   let n='';while(i<t.length&&dre.test(t[i]))n+=t[i++];
+   let v;
+   if(bm){const r=RX[bs];if(!new RegExp('^['+'0123456789ABCDEF'.slice(0,r)+']+$').test(n))throw SYN;v=parseInt(n,r);if(v>(bs==='D'?2147483647:4294967295))throw SYN;if(v>2147483647)v-=4294967296}
+   else{if(!/^(\d+\.?\d*|\.\d+)$/.test(n))throw SYN;v=parseFloat(n)}
+   if(t[i]==='ᴇ'){i++;let sg=1;if(t[i]==='-'){sg=-1;i++}else if(t[i]==='+')i++;
+    let e='';while(i<t.length&&/^[0-9]$/.test(t[i]))e+=t[i++];
+    if(!e)throw SYN;v*=Math.pow(10,sg*parseInt(e,10));}
+   out.push({k:'n',v});
+  }else out.push({k:'t',v:t[i++]});
+ }
+ return out;
+}
+function evaluate(src){
+ const T=lex(src);let p=0;
+ const isT=v=>T[p]&&T[p].k==='t'&&T[p].v===v;
+ const starts=()=>{const x=T[p];if(!x)return false;if(x.k==='n')return true;
+  return x.v==='('||x.v==='π'||x.v==='e'||x.v==='Ans'||x.v==='M'||x.v==='Ran#'||x.v in FN};
+ const close=()=>{if(isT(')'))p++;else if(p<T.length)throw SYN};
+ function expr(){let a=term();while(isT('+')||isT('-')){const o=T[p++].v,b=term();a=o==='+'?a+b:a-b}return a}
+ function term(){let a=perm();for(;;){
+  if(isT('×')){p++;a*=perm()}else if(isT('÷')){p++;a=dv(a,perm())}else if(starts())a*=perm();else break}return a}
+ function land(){let a=expr();while(isT('and')){p++;a=a&expr()}return a}
+ function lor(){let a=land();while(isT('or')||isT('xor')||isT('xnor')){const o=T[p++].v,b=land();a=o==='or'?a|b:o==='xor'?a^b:~(a^b)}return a}
+ function perm(){let a=unary();while(isT('P')||isT('C')){const o=T[p++].v,b=unary();a=o==='P'?nPr(a,b):nCr(a,b)}return a}
+ function unary(){if(isT('-')){p++;return -unary()}if(isT('+')){p++;return unary()}return power()}
+ function power(){const a=postfix();if(isT('^')){p++;return Math.pow(a,unary())}return a}
+ function postfix(){let a=primary();for(;;){
+  if(isT('!')){p++;a=fact(a)}else if(isT('²')){p++;a*=a}else if(isT('³')){p++;a=a*a*a}else if(isT('⁻¹')){p++;a=1/a}else break}return a}
+ function primary(){
+  const x=T[p++];if(!x)throw SYN;if(x.k==='n')return x.v;const v=x.v;
+  if(v==='('){const a=lor();close();return a}
+  if(v==='π')return Math.PI;if(v==='e')return Math.E;if(v==='Ans')return ANS;if(v==='M')return MEM;if(v==='Ran#')return Math.random();
+  if(v in FN){const a=lor();close();return FN[v](a)}
+  throw SYN}
+ const r=lor();if(p<T.length)throw SYN;return r;
+}
+function calc(){
+ try{let v=evaluate(tk);if(!isFinite(v))throw MTH;if(bm){if(v<-2147483648||v>4294967295)throw MTH;v|=0}return v}
+ catch(e){throw e===MTH?MTH:SYN}
+}
+
+/* ---------- display helpers ---------- */
+function fmt(x){
+ if(x===0)return '0';
+ const s=Number(x.toPrecision(10)),a=Math.abs(s);
+ if(a>=1e10||a<1e-6){const[m,e]=s.toExponential().split('e');return m+'×10^'+(+e)}
+ return String(s);
+}
+const H=s=>s.replace(/×10\^(-?\d+)/,'×10<sup>$1</sup>');
+function toFrac(x){
+ if(!isFinite(x)||Number.isInteger(x))return null;
+ const sg=x<0?-1:1,v=Math.abs(x);let h0=0,h1=1,k0=1,k1=0,b=v;
+ for(let i=0;i<24;i++){
+  const a=Math.floor(b),h2=a*h1+h0,k2=a*k1+k0;h0=h1;h1=h2;k0=k1;k1=k2;
+  if(k1>99999)return null;
+  if(Math.abs(v-h1/k1)<1e-9*Math.max(1,v))return[sg*h1,k1];
+  const f=b-a;if(f<1e-12)break;b=1/f;
+ }
+ return null;
+}
+const fracHTML=f=>(f[0]<0?'−':'')+'<span class="fr"><b>'+Math.abs(f[0])+'</b><b>'+f[1]+'</b></span>';
+const lab=t=>['and','or','xor','xnor'].includes(t)?' '+t+' ':t==='ᴇ'?'×10^':t==='-'?'−':t==='abs('?'Abs(':t.replace(/^a(sin|cos|tan)(h?)\(/,'$1$2⁻¹(');
+
+function render(){
+ const c='<i class="c"></i>',ex=$('#ex');
+ ex.innerHTML=tk.map((t,i)=>(i===cur?c:'')+lab(t)).join('')+(cur>=tk.length?c:'');
+ const ci=ex.querySelector('.c');if(ci)ex.scrollLeft=Math.max(0,ci.offsetLeft-ex.clientWidth+24);
+ const r=$('#res');
+ if(res===null)r.innerHTML=bm&&!tk.length?'<span class="hint">BASE mode: pick DEC, HEX, BIN or OCT, then type a number</span>':'';
+ else if(typeof res==='string')r.textContent=res;
+ else if(bm)r.textContent=fb(res,bs);
+ else{const f=showFrac&&toFrac(res);r.innerHTML=f?fracHTML(f):H(fmt(res))}
+ $('#ind').innerHTML=`<span class="${shift?'on':''}">S</span><span class="${hyp?'on':''}">hyp</span><span class="on">${bm?{D:'DEC',H:'HEX',B:'BIN',O:'OCT'}[bs]:{D:'DEG',R:'RAD',G:'GRAD'}[mode]}</span><span class="${MEM?'on':''}">M</span>`;
+ SH.classList.toggle('on',shift);HY.classList.toggle('on',hyp);BB.classList.toggle('on',bm);r.style.fontSize=bm&&bs==='B'?'17px':'';
+ $('#cv').innerHTML=bm&&typeof res==='number'?['H','D','O','B'].filter(k=>k!==bs).map(k=>'<div><i>'+{H:'HEX',D:'DEC',O:'OCT',B:'BIN'}[k]+'</i>'+fb(res,k)+'</div>').join(''):'';
+}
+function renderHist(){
+ $('#hl').innerHTML=hist.map((h,i)=>`<div class="hi" data-i="${i}"><span>${h.t.map(x=>lab(x)).join('')}</span><b>= ${H(h.r)}</b></div>`).join('')||'<p>No calculations yet.</p>';
+}
+
+/* ---------- editing + commands ---------- */
+const OPS=['+','-','×','÷','^','P','C','!','²','³','⁻¹','and','or','xor','xnor'];
+function ins(t){
+ if(afterEq){tk=OPS.includes(t)&&!(bm&&t==='C')?['Ans']:[];cur=tk.length;afterEq=false}
+ res=null;tk.splice(cur,0,t);cur++;
+}
+function mem(f){try{const v=tk.length&&!afterEq?calc():ANS;MEM=f(MEM,v)}catch(e){res=e.message}}
+function cmd(v){
+ switch(v){
+  case 'base':bm=!bm;bs='D';tk=[];cur=0;res=null;afterEq=false;hyp=false;applyBase();break;
+  case 'bd':case 'bh':case 'bb':case 'bo':bs={bd:'D',bh:'H',bb:'B',bo:'O'}[v];if(typeof res!=='number')res=null;tk=[];cur=0;applyBase();break;
+  case 'hyp':hyp=!hyp;break;
+  case 'drg':mode=mode==='D'?'R':mode==='R'?'G':'D';break;
+  case 'left':afterEq=false;cur=Math.max(0,cur-1);break;
+  case 'right':afterEq=false;cur=Math.min(tk.length,cur+1);break;
+  case 'del':afterEq=false;res=null;if(cur>0){tk.splice(cur-1,1);cur--}break;
+  case 'ac':tk=[];cur=0;res=null;afterEq=false;break;
+  case 'sd':if(typeof res==='number')showFrac=!showFrac;break;
+  case 'sto':mem((m,x)=>x);break;
+  case 'mplus':mem((m,x)=>m+x);break;
+  case 'mminus':mem((m,x)=>m-x);break;
+  case 'eq':
+   if(!tk.length)break;
+   try{const v=calc();res=v;ANS=v;showFrac=false;afterEq=true;cur=tk.length;
+    if(!bm){hist.unshift({t:[...tk],r:fmt(v)});if(hist.length>30)hist.pop();renderHist()}}
+   catch(e){res=e.message;afterEq=false;cur=tk.length}
+   break;
+ }
+}
+function act(b,sh){
+ const a=(sh&&b.sa)||b.a,ty=a[0],v=a.slice(2);
+ if(ty==='i')ins(v);
+ else if(ty==='f'){let n=v;if(hyp)n=n.replace(/(sin|cos|tan)$/,'$1h');ins(n+'(');hyp=false}
+ else cmd(v);
+}
+function press(b){
+ if(bm&&BM[b.l])b={a:BM[b.l][1]};
+ if(b.a==='x:shift'){shift=!shift;return render()}
+ const s=shift;shift=false;act(b,s);render();
+}
+
+/* ---------- keypad ---------- */
+const K=[
+ ['SHIFT','','x:shift','','sh'],['DRG','','x:drg','',''],['◀','','x:left','',''],['▶','','x:right','',''],['S⇔D','','x:sd','',''],
+ ['hyp','','x:hyp','',''],['sin','sin⁻¹','f:sin','f:asin',''],['cos','cos⁻¹','f:cos','f:acos',''],['tan','tan⁻¹','f:tan','f:atan',''],['(−)','','i:-','',''],
+ ['log','10ˣ','f:log','i:10^(',''],['ln','eˣ','f:ln','i:e^(',''],['x²','x³','i:²','i:³',''],['xʸ','','i:^','',''],['√','³√','i:√(','i:³√(',''],
+ ['(','','i:(','',''],[')','','i:)','',''],['x!','','i:!','',''],['nPr','nCr','i:P','i:C',''],['π','e','i:π','i:e',''],
+ ['RCL','STO','i:M','x:sto',''],['M+','M−','x:mplus','x:mminus',''],['x⁻¹','','i:⁻¹','',''],['Abs','','i:abs(','',''],['BASE','DEC·HEX·BIN','x:base','',''],
+ ['7','','i:7','','num'],['8','','i:8','','num'],['9','','i:9','','num'],['DEL','','x:del','','del'],['AC','','x:ac','','ac'],
+ ['4','','i:4','','num'],['5','','i:5','','num'],['6','','i:6','','num'],['×','','i:×','','op'],['÷','','i:÷','','op'],
+ ['1','','i:1','','num'],['2','','i:2','','num'],['3','','i:3','','num'],['+','','i:+','','op'],['−','','i:-','','op'],
+ ['0','','i:0','','num'],['.','','i:.','','num'],['×10ˣ','','i:ᴇ','','op'],['Ans','Ran#','i:Ans','i:Ran#','op'],['=','','x:eq','','eq']
+];
+const pad=$('#pad'),BT=[];
+K.forEach(([l,s,a,sa,c])=>{
+ const b=document.createElement('button');b.type='button';b.className='k '+c;
+ const o={l,s,a,sa,b};b.onclick=()=>press(o);
+ if(a==='x:shift')SH=b;if(a==='x:hyp')HY=b;if(a==='x:base')BB=b;
+ BT.push(o);pad.appendChild(b);
+});
+/* BASE-N mode: keys get new labels/actions, unusable keys are dimmed */
+const BM={'hyp':['A','i:A'],'sin':['B','i:B'],'cos':['C','i:C'],'tan':['D','i:D'],'(−)':['E','i:E'],'log':['F','i:F'],
+ 'ln':['DEC','x:bd'],'x²':['HEX','x:bh'],'xʸ':['BIN','x:bb'],'√':['OCT','x:bo'],
+ 'x!':['and','i:and'],'nPr':['or','i:or'],'π':['xor','i:xor'],'RCL':['xnor','i:xnor'],'M+':['Not','i:Not('],'x⁻¹':['Neg','i:Neg(']};
+const KEEP=['BASE','◀','▶','(',')','0','1','2','3','4','5','6','7','8','9','DEL','AC','×','÷','+','−','Ans','='];
+function applyBase(){
+ BT.forEach(o=>{
+  const r=bm&&BM[o.l];let off=false;
+  if(bm){
+   if(r)off=/^[A-F]$/.test(r[0])&&bs!=='H';
+   else if(!KEEP.includes(o.l))off=true;
+   else if(/^\d$/.test(o.l))off=+o.l>=RX[bs];
+  }
+  o.b.innerHTML=r?r[0]:(bm?o.l:(o.s?'<small'+(o.l==='BASE'?' style="color:#8fdcff"':'')+'>'+o.s+'</small>':'')+o.l);
+  o.b.disabled=off;o.b.classList.toggle('bl',!!r);o.b.classList.toggle('cur',!!r&&{DEC:'D',HEX:'H',BIN:'B',OCT:'O'}[r[0]]===bs);
+ });
+}
+applyBase();
+
+/* ---------- keyboard ---------- */
+const KM={'+':'+','-':'-','*':'×','/':'÷','^':'^','(':'(',')':')','!':'!','.':'.'};
+addEventListener('keydown',e=>{
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ const k=e.key;let a=null;
+ if(/^[0-9]$/.test(k))a='i:'+k;
+ else if(Object.prototype.hasOwnProperty.call(KM,k))a='i:'+KM[k];
+ else if(bm&&bs==='H'&&/^[a-fA-F]$/.test(k))a='i:'+k.toUpperCase();
+ else if(k==='Enter'||k==='=')a='x:eq';
+ else if(k==='Backspace')a='x:del';
+ else if(k==='Escape')a='x:ac';
+ else if(k==='ArrowLeft')a='x:left';
+ else if(k==='ArrowRight')a='x:right';
+ if(bm&&a&&(/^i:[.^!]$/.test(a)||/^i:\d$/.test(a)&&+a[2]>=RX[bs]))a=null;
+ if(a){e.preventDefault();shift=false;act({a},false);render()}
+});
+
+/* ---------- history ---------- */
+$('#hl').addEventListener('click',e=>{
+ const d=e.target.closest('.hi');if(!d)return;
+ tk=[...hist[+d.dataset.i].t];cur=tk.length;afterEq=false;res=null;render();
+});
+$('#clr').onclick=()=>{hist=[];renderHist()};
+
+render();renderHist();
+})();
+</script>
+</body>
+</html>
