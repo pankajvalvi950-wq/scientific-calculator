@@ -72,18 +72,30 @@ h1{font-size:20px;margin:6px 0 2px}
   <div class="pad" id="pad"></div>
 </div>
 
-<p class="tip">Press SHIFT to use the yellow functions. DRG switches degrees, radians and grads. S⇔D shows a decimal answer as a fraction. BASE switches the keys to number-system mode: DEC, HEX, BIN, OCT, A–F and logic operations appear on the keys, and the other bases are shown under the result. Press BASE again to go back. Your keyboard works too: digits, + − * / ^ ( ), Enter, Backspace, Esc, arrows.</p>
+<p class="tip">Press SHIFT to use the yellow functions. DRG switches degrees, radians and grads. SHIFT + DRG or SHIFT + S⇔D changes the number of decimal places (FIX 0 to 10, then back to normal). S⇔D shows a decimal answer as a fraction. BASE switches the keys to number-system mode: DEC, HEX, BIN, OCT, A–F and logic operations appear on the keys, and the other bases are shown under the result. Press BASE again to go back. Your keyboard works too: digits, + − * / ^ ( ), Enter, Backspace, Esc, arrows.</p>
 
 <details class="hist"><summary>History</summary><div id="hl"></div><button class="clr" id="clr" type="button">Clear history</button></details>
 
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
-let tk=[],cur=0,mode='D',shift=false,hyp=false,ANS=0,MEM=0,afterEq=false,res=null,showFrac=false,hist=[],SH,HY,BB,bm=false,bs='D';
+let tk=[],cur=0,mode='D',shift=false,hyp=false,ANS=0,MEM=0,afterEq=false,res=null,showFrac=false,hist=[],SH,HY,BB,bm=false,bs='D',fix=null;
 const SYN=new Error('Syntax ERROR'),MTH=new Error('Math ERROR');
 const RX={D:10,H:16,B:2,O:8};
-const dv=(a,b)=>bm?Math.trunc(a/b):a/b;
-const fb=(v,b)=>{if(b==='D')return String(v);const s=(v>>>0).toString(RX[b]).toUpperCase();return b==='B'?s.replace(/\B(?=(?:[01]{4})+$)/g,' '):s};
+const dv=(a,b)=>a/b;
+const bi=x=>{if(!Number.isInteger(x))throw MTH;return x};
+const fbf=(v,b)=>{
+ if(b==='D')return String(Number(v.toPrecision(10)));
+ const r=RX[b],a=Math.abs(v);let ip=Math.floor(a),f=a-ip;const dg=[];
+ for(let i=0;i<10;i++){f*=r;const d=Math.min(r-1,Math.floor(f+1e-12));dg.push(d);f=Math.max(0,f-d)}
+ if(f>=0.5-1e-12){let i=9;for(;i>=0;i--){if(++dg[i]<r)break;dg[i]=0}if(i<0)ip++}
+ while(dg.length&&!dg[dg.length-1])dg.pop();
+ const T=n=>n.toString(r).toUpperCase();
+ let I=T(ip),F=dg.map(T).join('');
+ if(b==='B'){I=I.replace(/\B(?=(?:[01]{4})+$)/g,' ');F=F.replace(/(.{4})(?=.)/g,'$1 ')}
+ return (v<0?'-':'')+I+(F?'.'+F:'');
+};
+const fb=(v,b)=>{if(!Number.isInteger(v))return fbf(v,b);if(b==='D')return String(v);const s=(v>>>0).toString(RX[b]).toUpperCase();return b==='B'?s.replace(/\B(?=(?:[01]{4})+$)/g,' '):s};
 
 /* ---------- maths helpers ---------- */
 const rad=a=>mode==='D'?a*Math.PI/180:mode==='G'?a*Math.PI/200:a;
@@ -99,17 +111,20 @@ const FN={
  'asin(':a=>deg(Math.asin(a)),'acos(':a=>deg(Math.acos(a)),'atan(':a=>deg(Math.atan(a)),
  'sinh(':Math.sinh,'cosh(':Math.cosh,'tanh(':Math.tanh,'asinh(':Math.asinh,'acosh(':Math.acosh,'atanh(':Math.atanh,
  'log(':Math.log10,'ln(':Math.log,'10^(':a=>Math.pow(10,a),'e^(':Math.exp,
- '√(':Math.sqrt,'³√(':Math.cbrt,'abs(':Math.abs,'Not(':a=>~a,'Neg(':a=>-a
+ '√(':Math.sqrt,'³√(':Math.cbrt,'abs(':Math.abs,'Not(':a=>~bi(a),'Neg(':a=>-a
 };
 
 /* ---------- lexer + recursive-descent parser ---------- */
 function lex(t){
- const out=[],dre=bm?/^[0-9A-F]$/:/^[0-9.]$/;let i=0;
+ const out=[],dre=bm?/^[0-9A-F.]$/:/^[0-9.]$/;let i=0;
  while(i<t.length){
   if(dre.test(t[i])){
    let n='';while(i<t.length&&dre.test(t[i]))n+=t[i++];
    let v;
-   if(bm){const r=RX[bs];if(!new RegExp('^['+'0123456789ABCDEF'.slice(0,r)+']+$').test(n))throw SYN;v=parseInt(n,r);if(v>(bs==='D'?2147483647:4294967295))throw SYN;if(v>2147483647)v-=4294967296}
+   if(bm){const r=RX[bs],ds='0123456789ABCDEF'.slice(0,r),pr=n.split('.'),vd=s=>[...s].every(c=>ds.includes(c));
+    if(pr.length>2||!pr.every(vd)||!(pr[0]+(pr[1]||'')))throw SYN;
+    const fr=pr[1]||'';v=pr[0]?parseInt(pr[0],r):0;let w=1/r;for(const c of fr){v+=parseInt(c,r)*w;w/=r}
+    if(fr){if(v>2147483647)throw SYN}else{if(v>(bs==='D'?2147483647:4294967295))throw SYN;if(v>2147483647)v-=4294967296}}
    else{if(!/^(\d+\.?\d*|\.\d+)$/.test(n))throw SYN;v=parseFloat(n)}
    if(t[i]==='ᴇ'){i++;let sg=1;if(t[i]==='-'){sg=-1;i++}else if(t[i]==='+')i++;
     let e='';while(i<t.length&&/^[0-9]$/.test(t[i]))e+=t[i++];
@@ -128,8 +143,8 @@ function evaluate(src){
  function expr(){let a=term();while(isT('+')||isT('-')){const o=T[p++].v,b=term();a=o==='+'?a+b:a-b}return a}
  function term(){let a=perm();for(;;){
   if(isT('×')){p++;a*=perm()}else if(isT('÷')){p++;a=dv(a,perm())}else if(starts())a*=perm();else break}return a}
- function land(){let a=expr();while(isT('and')){p++;a=a&expr()}return a}
- function lor(){let a=land();while(isT('or')||isT('xor')||isT('xnor')){const o=T[p++].v,b=land();a=o==='or'?a|b:o==='xor'?a^b:~(a^b)}return a}
+ function land(){let a=expr();while(isT('and')){p++;a=bi(a)&bi(expr())}return a}
+ function lor(){let a=land();while(isT('or')||isT('xor')||isT('xnor')){const o=T[p++].v,b=bi(land());a=bi(a);a=o==='or'?a|b:o==='xor'?a^b:~(a^b)}return a}
  function perm(){let a=unary();while(isT('P')||isT('C')){const o=T[p++].v,b=unary();a=o==='P'?nPr(a,b):nCr(a,b)}return a}
  function unary(){if(isT('-')){p++;return -unary()}if(isT('+')){p++;return unary()}return power()}
  function power(){const a=postfix();if(isT('^')){p++;return Math.pow(a,unary())}return a}
@@ -144,12 +159,13 @@ function evaluate(src){
  const r=lor();if(p<T.length)throw SYN;return r;
 }
 function calc(){
- try{let v=evaluate(tk);if(!isFinite(v))throw MTH;if(bm){if(v<-2147483648||v>4294967295)throw MTH;v|=0}return v}
+ try{let v=evaluate(tk);if(!isFinite(v))throw MTH;if(bm){v=Number(v.toPrecision(13));if(v<-2147483648||v>4294967295)throw MTH;if(Number.isInteger(v))v|=0;else if(v>2147483647)throw MTH}return v}
  catch(e){throw e===MTH?MTH:SYN}
 }
 
 /* ---------- display helpers ---------- */
 function fmt(x){
+ if(fix!==null&&Math.abs(x)<1e10){const m=Math.pow(10,fix),r=Math.sign(x)*Math.round(Math.abs(Number(x.toPrecision(15)))*m*(1+1e-14))/m;return (r===0?0:r).toFixed(fix)}
  if(x===0)return '0';
  const s=Number(x.toPrecision(10)),a=Math.abs(s);
  if(a>=1e10||a<1e-6){const[m,e]=s.toExponential().split('e');return m+'×10^'+(+e)}
@@ -179,8 +195,8 @@ function render(){
  else if(typeof res==='string')r.textContent=res;
  else if(bm)r.textContent=fb(res,bs);
  else{const f=showFrac&&toFrac(res);r.innerHTML=f?fracHTML(f):H(fmt(res))}
- $('#ind').innerHTML=`<span class="${shift?'on':''}">S</span><span class="${hyp?'on':''}">hyp</span><span class="on">${bm?{D:'DEC',H:'HEX',B:'BIN',O:'OCT'}[bs]:{D:'DEG',R:'RAD',G:'GRAD'}[mode]}</span><span class="${MEM?'on':''}">M</span>`;
- SH.classList.toggle('on',shift);HY.classList.toggle('on',hyp);BB.classList.toggle('on',bm);r.style.fontSize=bm&&bs==='B'?'17px':'';
+ $('#ind').innerHTML=`<span class="${shift?'on':''}">S</span><span class="${hyp?'on':''}">hyp</span><span class="on">${bm?{D:'DEC',H:'HEX',B:'BIN',O:'OCT'}[bs]:{D:'DEG',R:'RAD',G:'GRAD'}[mode]}</span>${fix===null||bm?'':'<span class="on">FIX '+fix+'</span>'}<span class="${MEM?'on':''}">M</span>`;
+ SH.classList.toggle('on',shift);HY.classList.toggle('on',hyp);BB.classList.toggle('on',bm);r.style.fontSize=bm&&bs==='B'?'17px':r.textContent.length>13?'24px':'';
  $('#cv').innerHTML=bm&&typeof res==='number'?['H','D','O','B'].filter(k=>k!==bs).map(k=>'<div><i>'+{H:'HEX',D:'DEC',O:'OCT',B:'BIN'}[k]+'</i>'+fb(res,k)+'</div>').join(''):'';
 }
 function renderHist(){
@@ -198,6 +214,8 @@ function cmd(v){
  switch(v){
   case 'base':bm=!bm;bs='D';tk=[];cur=0;res=null;afterEq=false;hyp=false;applyBase();break;
   case 'bd':case 'bh':case 'bb':case 'bo':bs={bd:'D',bh:'H',bb:'B',bo:'O'}[v];if(typeof res!=='number')res=null;tk=[];cur=0;applyBase();break;
+  case 'fixu':fix=fix===null?0:fix>=10?null:fix+1;break;
+  case 'fixd':fix=fix===null?10:fix<=0?null:fix-1;break;
   case 'hyp':hyp=!hyp;break;
   case 'drg':mode=mode==='D'?'R':mode==='R'?'G':'D';break;
   case 'left':afterEq=false;cur=Math.max(0,cur-1);break;
@@ -230,7 +248,7 @@ function press(b){
 
 /* ---------- keypad ---------- */
 const K=[
- ['SHIFT','','x:shift','','sh'],['DRG','','x:drg','',''],['◀','','x:left','',''],['▶','','x:right','',''],['S⇔D','','x:sd','',''],
+ ['SHIFT','','x:shift','','sh'],['DRG','FIX+','x:drg','x:fixu',''],['◀','','x:left','',''],['▶','','x:right','',''],['S⇔D','FIX−','x:sd','x:fixd',''],
  ['hyp','','x:hyp','',''],['sin','sin⁻¹','f:sin','f:asin',''],['cos','cos⁻¹','f:cos','f:acos',''],['tan','tan⁻¹','f:tan','f:atan',''],['(−)','','i:-','',''],
  ['log','10ˣ','f:log','i:10^(',''],['ln','eˣ','f:ln','i:e^(',''],['x²','x³','i:²','i:³',''],['xʸ','','i:^','',''],['√','³√','i:√(','i:³√(',''],
  ['(','','i:(','',''],[')','','i:)','',''],['x!','','i:!','',''],['nPr','nCr','i:P','i:C',''],['π','e','i:π','i:e',''],
@@ -251,7 +269,7 @@ K.forEach(([l,s,a,sa,c])=>{
 const BM={'hyp':['A','i:A'],'sin':['B','i:B'],'cos':['C','i:C'],'tan':['D','i:D'],'(−)':['E','i:E'],'log':['F','i:F'],
  'ln':['DEC','x:bd'],'x²':['HEX','x:bh'],'xʸ':['BIN','x:bb'],'√':['OCT','x:bo'],
  'x!':['and','i:and'],'nPr':['or','i:or'],'π':['xor','i:xor'],'RCL':['xnor','i:xnor'],'M+':['Not','i:Not('],'x⁻¹':['Neg','i:Neg(']};
-const KEEP=['BASE','◀','▶','(',')','0','1','2','3','4','5','6','7','8','9','DEL','AC','×','÷','+','−','Ans','='];
+const KEEP=['BASE','◀','▶','(',')','0','1','2','3','4','5','6','7','8','9','.','DEL','AC','×','÷','+','−','Ans','='];
 function applyBase(){
  BT.forEach(o=>{
   const r=bm&&BM[o.l];let off=false;
@@ -279,7 +297,7 @@ addEventListener('keydown',e=>{
  else if(k==='Escape')a='x:ac';
  else if(k==='ArrowLeft')a='x:left';
  else if(k==='ArrowRight')a='x:right';
- if(bm&&a&&(/^i:[.^!]$/.test(a)||/^i:\d$/.test(a)&&+a[2]>=RX[bs]))a=null;
+ if(bm&&a&&(/^i:[\^!]$/.test(a)||/^i:\d$/.test(a)&&+a[2]>=RX[bs]))a=null;
  if(a){e.preventDefault();shift=false;act({a},false);render()}
 });
 
